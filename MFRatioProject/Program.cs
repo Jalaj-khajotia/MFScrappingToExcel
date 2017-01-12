@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 using Microsoft.Office.Interop.Excel;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using System.Xml;
+using System.IO;
+using System.Reflection;
 
 namespace MFRatioProject
 {
@@ -53,27 +56,21 @@ namespace MFRatioProject
             }
             var funds = new Dictionary<string, string>();
 
-            funds.Add("DSP BlackRock Small and Mid Cap Fund - Regular Plan",
-                     "https://www.valueresearchonline.com/funds/fundperformance.asp?schemecode=3725");
-            funds.Add("SBI Emerging Businesses Fund", "https://www.valueresearchonline.com/funds/fundperformance.asp?schemecode=2415");
-            funds.Add("Mirae Asset Emerging Bluechip Fund - Regular Plan", "https://www.valueresearchonline.com/funds/fundperformance.asp?schemecode=11213");
-            funds.Add("uti midcap", "https://www.valueresearchonline.com/funds/fundperformance.asp?schemecode=2138");
-            funds.Add("sbi magnum", "https://www.valueresearchonline.com/funds/fundperformance.asp?schemecode=204");
-            funds.Add("tata balanced", "https://www.valueresearchonline.com/funds/fundperformance.asp?schemecode=211");
-            funds.Add("icici prudential balanced", "https://www.valueresearchonline.com/funds/fundperformance.asp?schemecode=686");
-            funds.Add("SBI Magnum Midcap Fund", "https://www.valueresearchonline.com/funds/fundperformance.asp?schemecode=2662");
-            funds.Add("Franklin india smaller", "https://www.valueresearchonline.com/funds/fundperformance.asp?schemecode=3019");
-            funds.Add("Kotak Emerging Equity Scheme", "https://www.valueresearchonline.com/funds/fundperformance.asp?schemecode=4270");
-            funds.Add("sbi bluechip", "https://www.valueresearchonline.com/funds/fundperformance.asp?schemecode=3083");
-            funds.Add("Reliance Top 200 Fund - Retail Plan", "https://www.valueresearchonline.com/funds/fundperformance.asp?schemecode=5270");
-            funds.Add("Quantum Long Term Equity Fund", "https://www.valueresearchonline.com/funds/fundperformance.asp?schemecode=3181");
-            funds.Add("Franklin India Prima Plus Fund ", "https://www.valueresearchonline.com/funds/fundperformance.asp?schemecode=116");
-            funds.Add("ICICI Prudential value discovery", "https://www.valueresearchonline.com/funds/fundperformance.asp?schemecode=2310");
-            funds.Add("Sbi Magnum multi cap", "https://www.valueresearchonline.com/funds/fundperformance.asp?schemecode=2859");
-            funds.Add("Franklin India High Growth Companies Fund", "https://www.valueresearchonline.com/funds/fundperformance.asp?schemecode=5141");
-            funds.Add("Reliance Tax saver", "https://www.valueresearchonline.com/funds/fundperformance.asp?schemecode=2816");
-            funds.Add("DSP BlackRock Tax Saver Fund ", "https://www.valueresearchonline.com/funds/fundperformance.asp?schemecode=3985");
-            funds.Add("ICICI Prudential Long Term Equity Fund (Tax Saving)", "https://www.valueresearchonline.com/funds/fundperformance.asp?schemecode=640");
+            XmlDataDocument xmldoc = new XmlDataDocument();
+            XmlNodeList xmlnode;
+
+            var fileName2 = Path.Combine(
+           Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)
+               , @"myfunds.xml");
+            FileStream fs = new FileStream(fileName2, FileMode.Open, FileAccess.Read);
+            xmldoc.Load(fs);
+            xmlnode = xmldoc.GetElementsByTagName("mf");
+            var baseUrl = "https://www.valueresearchonline.com/funds/fundperformance.asp?schemecode=";
+            for (int mf = 0; mf < xmlnode.Count; mf++)
+            {
+                funds.Add(mf.ToString(), baseUrl + xmlnode[mf].ChildNodes.Item(0).InnerText.Trim());
+            }
+            fs.Close();
 
             var columnList = new List<string>() { "/html/body/div[2]/div/div/div[1]/div[1]/h1/span[1]/span",
             "//*[@id='fundHead']/div[3]/div/table/tr[1]/td[2]/a",
